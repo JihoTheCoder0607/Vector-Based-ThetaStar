@@ -32,7 +32,7 @@ class Node implements Comparable<Node> {
 class AStar {
     PriorityQueue<Node> openList = new PriorityQueue<>();
     HashSet<Point> closedSet = new HashSet<>();
-    HashMap<Point, Double> gScore = new HashMap<>();
+    HashMap<Point, Node> nodes = new HashMap<>();
     char[][] grid;
     Point start;
     Point goal;
@@ -51,7 +51,7 @@ class AStar {
         startNode.position = start;
 
         openList.add(startNode);
-        gScore.put(start, 0.0);
+        nodes.put(start, startNode);
     }
 
     public double calculateDistance(Point a, Point b) {
@@ -71,12 +71,28 @@ class AStar {
                     continue;
                 }
                 if (grid[newY][newX] == ' ') {
-                    Node newNode = new Node(new Point(newX, newY), currentNode);
-                    newNode.g = currentNode.g + 1;
-                    newNode.h = calculateDistance(newNode.position, goal);
-                    newNode.f = newNode.g + newNode.h;
-                    openList.add(newNode);
+                    double tentativeG = currentNode.g + 1;
+                    Point neighbor = new Point(newX, newY);
 
+                    Node neighborNode;
+                    if (!nodes.containsKey(neighbor)) {
+                        neighborNode = new Node(neighbor);
+                        neighborNode.g = Double.POSITIVE_INFINITY;
+                        nodes.put(neighbor, neighborNode);
+                    }
+                    else {
+                        neighborNode = nodes.get(neighbor);
+                    }
+
+                    if (tentativeG < neighborNode.g) {
+                        neighborNode.parent = currentNode;
+                        neighborNode.g = tentativeG;
+                        neighborNode.h = calculateDistance(neighbor, goal);
+                        neighborNode.f = neighborNode.g + neighborNode.h;
+
+                        openList.remove(neighborNode);
+                        openList.add(neighborNode);
+                    }
                 }
             }
         }

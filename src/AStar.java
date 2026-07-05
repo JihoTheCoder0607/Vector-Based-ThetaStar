@@ -5,16 +5,12 @@ import java.util.PriorityQueue;
 import static java.lang.Math.pow;
 
 class Node implements Comparable<Node> {
-    double f=0;
-    double g=0;
-    double h=0;
+    double g = Double.POSITIVE_INFINITY;
+    double h = 0;
+    double f = Double.POSITIVE_INFINITY;
     Point position;
     Node parent;
 
-    public Node(Point position, Node parent) {
-        this.position = position;
-        this.parent = parent;
-    }
     public Node(Point position) {
         this.position = position;
         this.parent = null;
@@ -66,18 +62,18 @@ class AStar {
 
             int newX = currentNode.position.x + dx;
             int newY = currentNode.position.y + dy;
+
+            Point neighbor = new Point(newX, newY);
             if (0 <= newX && newX < grid[0].length && 0 <= newY && newY < grid.length) {
-                if (closedSet.contains(new Point(newX, newY))){
+                if (closedSet.contains(neighbor)){
                     continue;
                 }
-                if (grid[newY][newX] == ' ') {
+                if (grid[newY][newX] == ' ' || grid[newY][newX] == 'G') {
                     double tentativeG = currentNode.g + 1;
-                    Point neighbor = new Point(newX, newY);
 
                     Node neighborNode;
                     if (!nodes.containsKey(neighbor)) {
                         neighborNode = new Node(neighbor);
-                        neighborNode.g = Double.POSITIVE_INFINITY;
                         nodes.put(neighbor, neighborNode);
                     }
                     else {
@@ -98,4 +94,24 @@ class AStar {
         }
     }
 
+    Node search() {
+        this.initialize();
+        while (!openList.isEmpty()) {
+
+            Node current = openList.poll();
+
+            if (closedSet.contains(current.position)) {
+                continue;
+            }
+
+            if (current.position.equals(goal)) {
+                return current;
+            }
+
+            closedSet.add(current.position);
+
+            this.getNeighbors(current);
+        }
+        return null;
+    }
 }

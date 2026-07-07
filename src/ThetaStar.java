@@ -21,7 +21,7 @@ public class ThetaStar extends AStar {
         int err = dx - dy;
 
         while (true) {
-            if (grid[x1][y1] == '#') {
+            if (grid[y1][x1] == '#') {
                 return false;
             }
             if (x1 == x2 && y1 == y2) {
@@ -39,6 +39,54 @@ public class ThetaStar extends AStar {
             }
         }
 
+    }
+
+    @Override
+    void getNeighbors(Node currentNode) {
+        int[][] directions = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+        for (int[] direction : directions) {
+            int dy = direction[0];
+            int dx = direction[1];
+
+            int newX = currentNode.position.x + dx;
+            int newY = currentNode.position.y + dy;
+
+            Point neighbor = new Point(newX, newY);
+            if (0 <= newX && newX < grid[0].length && 0 <= newY && newY < grid.length) {
+                if (closedSet.contains(neighbor)){
+                    continue;
+                }
+                if (grid[newY][newX] == ' ' || grid[newY][newX] == 'G') {
+                    double tentativeG = currentNode.g + 1;
+
+                    Node neighborNode;
+                    if (!nodes.containsKey(neighbor)) {
+                        neighborNode = new Node(neighbor);
+                        nodes.put(neighbor, neighborNode);
+                    }
+                    else {
+                        neighborNode = nodes.get(neighbor);
+                    }
+
+                    if (currentNode.parent != null && lineOfSight(currentNode.parent, neighborNode)) {
+                        tentativeG = currentNode.parent.g + calculateDistance(currentNode.parent.position, neighbor);
+                        neighborNode.parent = currentNode.parent;
+                        neighborNode.g = tentativeG;
+                        neighborNode.h = calculateDistance(neighbor, goal);
+                        neighborNode.f = neighborNode.g + neighborNode.h;
+                    }
+
+                    if (tentativeG < neighborNode.g) {
+                        neighborNode.parent = currentNode;
+                        neighborNode.g = tentativeG;
+                        neighborNode.h = calculateDistance(neighbor, goal);
+                        neighborNode.f = neighborNode.g + neighborNode.h;
+
+                        openList.add(neighborNode);
+                    }
+                }
+            }
+        }
     }
 
 }

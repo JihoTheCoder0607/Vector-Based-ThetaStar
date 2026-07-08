@@ -68,16 +68,15 @@ public class ThetaStar extends AStar {
                         neighborNode = nodes.get(neighbor);
                     }
 
+                    Node bestParent = currentNode;
+
                     if (currentNode.parent != null && lineOfSight(currentNode.parent, neighborNode)) {
+                        bestParent = currentNode.parent;
                         tentativeG = currentNode.parent.g + calculateDistance(currentNode.parent.position, neighbor);
-                        neighborNode.parent = currentNode.parent;
-                        neighborNode.g = tentativeG;
-                        neighborNode.h = calculateDistance(neighbor, goal);
-                        neighborNode.f = neighborNode.g + neighborNode.h;
                     }
 
                     if (tentativeG < neighborNode.g) {
-                        neighborNode.parent = currentNode;
+                        neighborNode.parent = bestParent;
                         neighborNode.g = tentativeG;
                         neighborNode.h = calculateDistance(neighbor, goal);
                         neighborNode.f = neighborNode.g + neighborNode.h;

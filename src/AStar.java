@@ -55,7 +55,7 @@ class AStar {
     }
 
     void getNeighbors(Node currentNode) {
-        int[][] directions = {{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {1, -1}};
+        int[][] directions = {{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
         for (int[] direction : directions) {
             int dy = direction[0];
             int dx = direction[1];

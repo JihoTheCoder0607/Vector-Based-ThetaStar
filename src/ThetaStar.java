@@ -41,22 +41,10 @@ public class ThetaStar extends AStar {
 
     }
 
-    private double crossTrack(Node node) {
-        double dx = goal.x - start.x;
-        double dy = goal.y - start.y;
-
-        double numerator = abs(dy * node.position.x - dx * node.position.y + goal.x * start.y - goal.y * start.x);
-        double denominator = sqrt(pow(dx, 2) + pow(dy, 2));
-
-        return numerator / denominator;
+    protected double getPenalty(Node parent, Node node) {
+        return 0;
     }
 
-    private double angle(Node node) {
-        double m1 = (double) (goal.y - start.y) / (goal.x - start.x);
-        double m2 = (double) (node.position.y - node.parent.position.y) / (node.position.x - node.parent.position.x);
-        double tan = abs((m1 - m2) / (1 + m1 * m2));
-        return atan(tan);
-    }
 
     @Override
     void getNeighbors(Node currentNode) {
@@ -74,7 +62,6 @@ public class ThetaStar extends AStar {
                     continue;
                 }
                 if (grid[newY][newX] == ' ' || grid[newY][newX] == 'G') {
-                    double tentativeG = currentNode.g + sqrt(dy * dy + dx * dx);
 
                     Node neighborNode;
                     if (!nodes.containsKey(neighbor)) {
@@ -87,13 +74,23 @@ public class ThetaStar extends AStar {
 
                     Node bestParent = currentNode;
 
+                    double costThroughCurrent = currentNode.g + calculateDistance(currentNode.position, neighborNode.position) + getPenalty(currentNode, neighborNode);
+                    double tentativeG = costThroughCurrent;
+                    Node chosenParent = currentNode;
+
                     if (currentNode.parent != null && lineOfSight(currentNode.parent, neighborNode)) {
                         bestParent = currentNode.parent;
-                        tentativeG = currentNode.parent.g + calculateDistance(currentNode.parent.position, neighbor);
+                        double costThroughParent = bestParent.g + calculateDistance(bestParent.position, neighborNode.position) + getPenalty(bestParent, neighborNode);
+
+                        if (costThroughParent < costThroughCurrent) {
+                            tentativeG = costThroughParent;
+                            chosenParent = bestParent;
+                        }
                     }
 
+
                     if (tentativeG < neighborNode.g) {
-                        neighborNode.parent = bestParent;
+                        neighborNode.parent = chosenParent;
                         neighborNode.g = tentativeG;
                         neighborNode.h = calculateDistance(neighbor, goal);
                         neighborNode.f = neighborNode.g + neighborNode.h;

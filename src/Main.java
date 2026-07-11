@@ -27,7 +27,7 @@ public class Main {
         };
         Point start = new Point(0, 0);
         Point goal = new Point(grid.length-1, grid[0].length-1);
-        ThetaStar thetastar = new ThetaStar(grid, start, goal);
+        VBTStar thetastar = new VBTStar(grid, start, goal);
         Node result = thetastar.search();
         ArrayList<Node> path = thetastar.reconstructPath(result);
         for (Node node : path) {

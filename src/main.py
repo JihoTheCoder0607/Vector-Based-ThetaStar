@@ -3,6 +3,8 @@ import os
 from jpype import JArray, JChar
 from maze_dataset import MazeDataset, MazeDatasetConfig
 from maze_dataset.generation import LatticeMazeGenerators
+import matplotlib.pyplot as plt
+import copy
 
 def create_maze(grid_n, n_mazes):
 	cfg = MazeDatasetConfig(
@@ -30,6 +32,24 @@ def find_in_maze(grid, x):
             col_idx = row.index(x)
             return row_idx, col_idx
 
+def visualize_maze(grid):
+    plot = copy.deepcopy(grid)
+    for i in range(len(plot)):
+        for j in range(len(plot[i])):
+            if plot[i][j] == " ":
+                plot[i][j] = 0.0
+            elif plot[i][j] == "S":
+                plot[i][j] = 1.0
+            elif plot[i][j] == "E":
+                plot[i][j] = 2.0
+            elif plot[i][j] == "P":
+                plot[i][j] = 3.0
+            elif plot[i][j] == "#":
+                plot[i][j] = 4.0
+    plt.imshow(plot)
+    plt.show()
+
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 jvm_path = "/Users/ijiho/Library/Java/JavaVirtualMachines/openjdk-26.0.1/Contents/Home/lib/server/libjvm.dylib"
@@ -40,7 +60,7 @@ VBTStar = jpype.JClass("VBTStar")
 
 Point = jpype.JClass("java.awt.Point")
 
-grid = create_maze(grid_n=10, n_mazes=1)[0]
+grid = create_maze(grid_n=20, n_mazes=10)[2]
 
 JavaGrid = JArray(JArray(JChar))
 
@@ -67,6 +87,8 @@ for node in path:
         java_grid[node.position.y][node.position.x] = 'E'
     else:
         java_grid[node.position.y][node.position.x] = 'P'
+
+visualize_maze([list(row) for row in java_grid])
 
 for row in java_grid:
     for element in row:

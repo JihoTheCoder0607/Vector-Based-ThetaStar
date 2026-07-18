@@ -21,6 +21,10 @@ public class ThetaStar extends AStar {
         int err = dx - dy;
 
         while (true) {
+            if (x1 < 0 || x1 >= grid[0].length || y1 < 0 || y1 >= grid.length) {
+                return false;
+            }
+
             if (grid[y1][x1] == '#') {
                 return false;
             }

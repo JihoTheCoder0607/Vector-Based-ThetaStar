@@ -20,9 +20,9 @@ def rectangle(grid, x, y, n):
 def create_maze(grid_size):
     grid = [[" " for _ in range(grid_size[1])] for _ in range(grid_size[0])]
 
-    grid = rectangle(grid, 2, 1, 130)
-    grid = rectangle(grid, 3, 2, 70)
-    grid = rectangle(grid, 1, 1, 300)
+    grid = rectangle(grid, 2, 1, 400)
+    grid = rectangle(grid, 3, 2, 600)
+    grid = rectangle(grid, 1, 1, 900)
 
     sr = random.choice(range(grid_size[0]))
     sc = random.choice(range(grid_size[1]))
@@ -34,16 +34,11 @@ def create_maze(grid_size):
 
     er = random.choice(range(grid_size[0]))
     ec = random.choice(range(grid_size[1]))
-    while (er == sr and ec == ec) or grid[er][ec] == "#":
+    while (er == sr and ec == sc) or grid[er][ec] == "#":
         er = random.choice(range(grid_size[0]))
         ec = random.choice(range(grid_size[1]))
     grid[er][ec] = "E"
     return grid
-
-def print_maze(grid):
-	for row in grid:
-		print(row)
-	print()
 
 def find_in_maze(grid, x):
     for row_idx, row in enumerate(grid):
@@ -82,43 +77,44 @@ jvm_path = "/Users/ijiho/Library/Java/JavaVirtualMachines/openjdk-26.0.1/Content
 jpype.startJVM(jvm_path, classpath=[current_dir])
 
 VBTStar = jpype.JClass("VBTStar")
+ThetaStar = jpype.JClass("ThetaStar")
+AStar = jpype.JClass("AStar")
 
 Point = jpype.JClass("java.awt.Point")
 
-grid = create_maze((60, 50))
+def simulate(grid_size, model_class):
+    grid = create_maze(grid_size)
 
+    JavaGrid = JArray(JArray(JChar))
 
-JavaGrid = JArray(JArray(JChar))
+    java_grid = JavaGrid([
+        JArray(JChar)(row)
+        for row in grid
+    ])
 
-java_grid = JavaGrid([
-    JArray(JChar)(row)
-    for row in grid
-])
+    startr, startc = find_in_maze(grid, "S")
+    endr, endc = find_in_maze(grid, "E")
 
-startr, startc = find_in_maze(grid, "S")
-endr, endc = find_in_maze(grid, "E")
+    start = Point(startc, startr)
+    goal = Point(endc, endr)
 
-start = Point(startc, startr)
-goal = Point(endc, endr)
+    for model_c in model_class:
 
-vbtstar = VBTStar(java_grid, start, goal)
-result = vbtstar.search()
+        model = model_c(java_grid, start, goal)
+        result = model.search()
 
-path = vbtstar.reconstructPath(result)
+        path = model.reconstructPath(result)
 
-for node in path:
-    if node.position.y == startr and node.position.x == startc:
-        java_grid[node.position.y][node.position.x] = 'S'
-    elif node.position.y == endr and node.position.x == endc:
-        java_grid[node.position.y][node.position.x] = 'E'
-    else:
-        java_grid[node.position.y][node.position.x] = 'P'
+        for node in path:
+            if node.position.y == startr and node.position.x == startc:
+                java_grid[node.position.y][node.position.x] = 'S'
+            elif node.position.y == endr and node.position.x == endc:
+                java_grid[node.position.y][node.position.x] = 'E'
+            else:
+                java_grid[node.position.y][node.position.x] = 'P'
 
-visualize_maze([list(row) for row in java_grid], path)
+        visualize_maze([list(row) for row in java_grid], path)
 
-for row in java_grid:
-    for element in row:
-        print(f"[{element}]", end="")
-    print()
+simulate((100, 100), [AStar, ThetaStar, VBTStar])
 
 jpype.shutdownJVM()

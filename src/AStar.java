@@ -3,6 +3,7 @@ import java.util.*;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
+import static java.lang.Math.atan2;
 
 public class AStar {
     PriorityQueue<Node> openList = new PriorityQueue<>();
@@ -108,5 +109,15 @@ public class AStar {
 
         Collections.reverse(path);
         return path;
+    }
+    public void metrics(ArrayList<Node> path) {
+        // 1. Distance
+        double distance=0;
+        for (Node p : path) {
+            if (p.parent != null) {
+                distance += calculateDistance(p.position, p.parent.position);
+            }
+        }
+        System.out.println(distance);
     }
 }

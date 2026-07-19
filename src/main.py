@@ -20,9 +20,9 @@ def rectangle(grid, x, y, n):
 def create_maze(grid_size):
     grid = [[" " for _ in range(grid_size[1])] for _ in range(grid_size[0])]
 
-    grid = rectangle(grid, 2, 1, 400)
-    grid = rectangle(grid, 3, 2, 600)
-    grid = rectangle(grid, 1, 1, 900)
+    grid = rectangle(grid, 5, 2, 600)
+    grid = rectangle(grid, 7, 6, 400)
+    grid = rectangle(grid, 1, 1, 600)
 
     sr = random.choice(range(grid_size[0]))
     sc = random.choice(range(grid_size[1]))
@@ -100,7 +100,7 @@ def simulate(grid_size, model_class):
         ])
 
         if model_c == VBTStar:
-            model = model_c(java_grid, start, goal, 2, 2)
+            model = model_c(java_grid, start, goal, 1000000, 1000000)
         else:
             model = model_c(java_grid, start, goal)
         result = model.search()
@@ -116,7 +116,8 @@ def simulate(grid_size, model_class):
                 java_grid[node.position.y][node.position.x] = 'P'
 
         visualize_maze([list(row) for row in java_grid], path)
+        model.metrics(path)
 
-simulate((100, 100), [AStar, ThetaStar, VBTStar])
+simulate((300, 200), [AStar, ThetaStar, VBTStar])
 
 jpype.shutdownJVM()

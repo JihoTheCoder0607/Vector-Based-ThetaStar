@@ -85,24 +85,21 @@ public class ThetaStar extends AStar {
                         neighborNode = nodes.get(neighbor);
                     }
 
-                    Node bestParent = currentNode;
-
-                    double costThroughCurrent = currentNode.g + calculateDistance(currentNode.position, neighborNode.position) + getPenalty(currentNode, neighborNode);
-                    double tentativeG = costThroughCurrent;
                     Node chosenParent = currentNode;
+                    double tentativeG;
 
                     if (currentNode.parent != null && lineOfSight(currentNode.parent, neighborNode)) {
-                        bestParent = currentNode.parent;
-                        double costThroughParent = bestParent.g + calculateDistance(bestParent.position, neighborNode.position) + getPenalty(bestParent, neighborNode);
-
-                        if (costThroughParent < costThroughCurrent) {
-                            tentativeG = costThroughParent;
-                            chosenParent = bestParent;
-                        }
+                        chosenParent = currentNode.parent;
+                        tentativeG = chosenParent.g + calculateDistance(chosenParent.position, neighborNode.position) + getPenalty(chosenParent, neighborNode);
+                    }
+                    else {
+                        chosenParent = currentNode;
+                        tentativeG = currentNode.g + calculateDistance(currentNode.position, neighborNode.position) + getPenalty(currentNode, neighborNode);
                     }
 
-
                     if (tentativeG < neighborNode.g) {
+                        openList.remove(neighborNode);
+
                         neighborNode.parent = chosenParent;
                         neighborNode.g = tentativeG;
                         neighborNode.h = calculateDistance(neighbor, goal);

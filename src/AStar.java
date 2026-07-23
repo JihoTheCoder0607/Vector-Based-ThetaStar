@@ -113,7 +113,7 @@ public class AStar {
         Collections.reverse(path);
         return path;
     }
-    public void metrics(ArrayList<Node> path) {
+    public double[] metrics(ArrayList<Node> path) {
         // 1. Distance
         double distance=0;
         for (Node p : path) {
@@ -121,7 +121,6 @@ public class AStar {
                 distance += calculateDistance(p.position, p.parent.position);
             }
         }
-        System.out.println(distance);
 
         // 2. Angle
         Node p1, p2, p3;
@@ -141,6 +140,7 @@ public class AStar {
             while (diff > 180)  diff -= 360;
             angleSum += abs(diff);
         }
-        System.out.println(angleSum/(path.size()-2));
+        double avgAngle = path.size() > 2 ? angleSum/(path.size()-2) : 0;
+        return new double[]{distance, avgAngle};
     }
 }

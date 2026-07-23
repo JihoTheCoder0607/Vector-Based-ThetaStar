@@ -82,42 +82,57 @@ AStar = jpype.JClass("AStar")
 
 Point = jpype.JClass("java.awt.Point")
 
-def simulate(grid_size, model_class):
-    grid = create_maze(grid_size)
+def simulate(grid_size, model_class, show, num_trials=10):
+    total_metrics = {model_c: [0.0, 0.0] for model_c in model_class}
 
-    JavaGrid = JArray(JArray(JChar))
+    for trial in range(num_trials):
+        grid = create_maze(grid_size)
 
-    startr, startc = find_in_maze(grid, "S")
-    endr, endc = find_in_maze(grid, "E")
+        JavaGrid = JArray(JArray(JChar))
 
-    start = Point(startc, startr)
-    goal = Point(endc, endr)
+        startr, startc = find_in_maze(grid, "S")
+        endr, endc = find_in_maze(grid, "E")
 
-    for model_c in model_class:
-        java_grid = JavaGrid([
-            JArray(JChar)(row)
-            for row in grid
-        ])
+        start = Point(startc, startr)
+        goal = Point(endc, endr)
 
-        if model_c == VBTStar:
-            model = model_c(java_grid, start, goal, 100, 100, 100)
-        else:
-            model = model_c(java_grid, start, goal)
-        result = model.search()
+        for model_c in model_class:
+            java_grid = JavaGrid([
+                JArray(JChar)(row)
+                for row in grid
+            ])
 
-        path = model.reconstructPath(result)
-
-        for node in path:
-            if node.position.y == startr and node.position.x == startc:
-                java_grid[node.position.y][node.position.x] = 'S'
-            elif node.position.y == endr and node.position.x == endc:
-                java_grid[node.position.y][node.position.x] = 'E'
+            if model_c == VBTStar:
+                model = model_c(java_grid, start, goal, 50, 50, 50)
             else:
-                java_grid[node.position.y][node.position.x] = 'P'
+                model = model_c(java_grid, start, goal)
+            result = model.search()
 
-        visualize_maze([list(row) for row in java_grid], path)
-        model.metrics(path)
+            path = model.reconstructPath(result)
 
-simulate((600, 400), [AStar, ThetaStar, VBTStar])
+            if trial in show:
+                for node in path:
+                    if node.position.y == startr and node.position.x == startc:
+                        java_grid[node.position.y][node.position.x] = 'S'
+                    elif node.position.y == endr and node.position.x == endc:
+                        java_grid[node.position.y][node.position.x] = 'E'
+                    else:
+                        java_grid[node.position.y][node.position.x] = 'P'
+
+                visualize_maze([list(row) for row in java_grid], path)
+
+            m = model.metrics(path)
+            total_metrics[model_c][0] += m[0]
+            total_metrics[model_c][1] += m[1]
+
+    print("\nAverage Metrics over {} trials:".format(num_trials))
+    for model_c, sums in total_metrics.items():
+        avg_dist = sums[0] / num_trials
+        avg_angle = sums[1] / num_trials
+        # JPype classes might not have __name__, using str() or a custom name mapping
+        name = model_c.__name__ if hasattr(model_c, '__name__') else str(model_c)
+        print("{} - Distance: {:.2f}, Avg Angle Turn: {:.2f}".format(name, avg_dist, avg_angle))
+
+simulate((600, 400), [AStar, ThetaStar, VBTStar], show=[0, 499, 999], num_trials=1000)
 
 jpype.shutdownJVM()
